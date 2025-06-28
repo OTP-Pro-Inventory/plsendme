@@ -164,36 +164,53 @@ def activity_log():
     return render_template('activity_log.html')
 
 # ======================
-# API ENDPOINTS
+# API ENDPOINTS (IMPROVED)
 # ======================
 
 @app.route('/api/stats')
 @login_required
 def get_stats():
-    inventory = read_json(INVENTORY_FILE)
-    stats = {
-        "total_items": sum(item['quantity'] for item in inventory),
-        "low_stock": sum(1 for item in inventory if item['quantity'] < item.get('threshold', 5)),
-        "total_products": len(inventory)
-    }
-    return jsonify(stats)
+    try:
+        inventory = read_json(INVENTORY_FILE)
+        stats = {
+            "total_items": sum(item['quantity'] for item in inventory),
+            "low_stock": sum(1 for item in inventory if item['quantity'] < item.get('threshold', 5)),
+            "total_products": len(inventory)
+        }
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/inventory', methods=['GET'])
 @login_required
 def get_inventory():
-    return jsonify(read_json(INVENTORY_FILE))
+    try:
+        return jsonify(read_json(INVENTORY_FILE))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/record-removal', methods=['POST'])
 @login_required
 def record_removal():
     try:
         data = request.get_json()
-        item_id = data.get('itemId')
-        amount = int(data.get('amount'))
-        employee = data.get('employee')
-        purpose = data.get('purpose')
-        store = data.get('store')
-        
+        if not data:
+            return jsonify({"success": False, "message": "No data provided"}), 400
+
+        # Validate required fields
+        required_fields = ['itemId', 'amount', 'employee', 'purpose']
+        if not all(field in data for field in required_fields):
+            return jsonify({"success": False, "message": "Missing required fields"}), 400
+
+        item_id = data['itemId']
+        amount = int(data['amount'])
+        employee = data['employee']
+        purpose = data['purpose']
+        store = data.get('store', 'Not specified')
+
+        if amount <= 0:
+            return jsonify({"success": False, "message": "Amount must be positive"}), 400
+
         # Update inventory
         inventory = read_json(INVENTORY_FILE)
         item = next((item for item in inventory if item['id'] == item_id), None)
@@ -213,6 +230,7 @@ def record_removal():
             "item_id": item_id,
             "item_name": item['name'],
             "amount": amount,
+            "remaining": item['quantity'],
             "employee": employee,
             "purpose": purpose,
             "store": store,
@@ -225,20 +243,33 @@ def record_removal():
         write_json(REMOVALS_FILE, removals)
         
         log_activity(f"Recorded removal: {amount}x {item['name']} by {employee}")
-        return jsonify({"success": True, "message": "Removal recorded"})
+        return jsonify({
+            "success": True,
+            "message": "Removal recorded successfully",
+            "remaining": item['quantity']
+        })
         
+    except ValueError:
+        return jsonify({"success": False, "message": "Invalid amount value"}), 400
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        app.logger.error(f"Error recording removal: {str(e)}")
+        return jsonify({"success": False, "message": f"Server error: {str(e)}"}), 500
 
 @app.route('/api/removals', methods=['GET'])
 @login_required
 def get_removals():
-    return jsonify(read_json(REMOVALS_FILE))
+    try:
+        return jsonify(read_json(REMOVALS_FILE))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/activity', methods=['GET'])
 @login_required
 def get_activity():
-    return jsonify(read_json(ACTIVITY_FILE))
+    try:
+        return jsonify(read_json(ACTIVITY_FILE))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ======================
 # RUN APPLICATION
