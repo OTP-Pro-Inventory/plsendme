@@ -4,20 +4,15 @@ from functools import wraps
 import json
 import os
 
-app = Flask(__name__)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+app = Flask(__name__, static_folder="static", template_folder="templates")
+CORS(app)
+app.secret_key = "your-secret-key"  # Change this to a secure key in production
 
 # Sample user database
 USERS = {
     "sallen": "Bigmac100",
     "bgaines": "Cheese100"
 }
-
-app = Flask(__name__, static_folder="static", static_url_path="")
-CORS(app)  # Enable CORS
-app.secret_key = "your-secret-key"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INVENTORY_FILE = os.path.join(BASE_DIR, "inventory.json")
@@ -42,7 +37,13 @@ def login_required(f):
             return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated_function
-    
+
+# HTML Page Routes
+@app.route("/")
+@login_required
+def serve_index():
+    return render_template("index.html")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -51,10 +52,30 @@ def login():
         if username in USERS and USERS[username] == password:
             session["username"] = username
             return redirect(url_for("serve_index"))
-        else:
-            return render_template("login.html", error="Invalid username or password")
+        return render_template("login.html", error="Invalid username or password")
     return render_template("login.html")
 
+@app.route("/logout")
+def logout():
+    session.pop("username", None)
+    return redirect(url_for("login"))
+
+@app.route("/inventory")
+@login_required
+def inventory_page():
+    return render_template("inventory.html")
+
+@app.route("/activity")
+@login_required
+def activity_page():
+    return render_template("activity.html")
+
+@app.route("/removals")
+@login_required
+def removals_page():
+    return render_template("removals.html")
+
+# API Endpoints (keep your existing ones)
 @app.route("/api/inventory", methods=["GET", "PUT"])
 @login_required
 def inventory_api():
@@ -88,15 +109,5 @@ def activity_api():
         write_json(ACTIVITY_FILE, new_data)
         return jsonify({"status": "ok", "length": len(new_data)})
 
-@app.route("/")
-@login_required
-def serve_index():
-    return send_from_directory(app.static_folder, "index.html")
-
-@app.route("/logout")
-def logout():
-    session.pop("username", None)
-    return redirect(url_for("login"))
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
