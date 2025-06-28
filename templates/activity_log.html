@@ -1,44 +1,67 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-.custom-button {
-  display: inline-block;
-  padding: 12px 24px;
-  margin: 10px;
-  background: linear-gradient(to right, #d64541, #f1c40f);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
-}
-.custom-button:hover {
-  transform: scale(1.05);
-}
-</style>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Log</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Updated CSS path -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .custom-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .custom-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Added styles for log display */
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .log-timestamp {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+    </style>
 </head>
 <body>
-
-<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+    <!-- Updated logout link -->
+    <a href="{{ url_for('logout') }}" class="custom-button">🚪 LOGOUT</a>
 
     <div class="container">
         <div class="header">
             <h1>📊 Activity Log</h1>
         </div>
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
-            <button class="menu-btn" onclick="location.href='inventory.html'">📦 Inventory</button>
-            <button class="menu-btn" onclick="location.href='add_item.html'">➕ Add Item</button>
-            <button class="menu-btn" onclick="location.href='removals.html'">📋 Removal History</button>
+            <!-- Updated navigation using url_for -->
+            <button class="menu-btn" onclick="location.href='{{ url_for('index') }}'">🏠 Home</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('inventory') }}'">📦 Inventory</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('add_item') }}'">➕ Add Item</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('removals') }}'">📋 Removal History</button>
         </div>
         <div class="section" id="activity-log">
             <div class="log-section">
@@ -49,10 +72,60 @@
                         <button class="log-btn clear-log-btn" onclick="clearActivityLog()">Clear Log</button>
                     </div>
                 </div>
-                <div id="activity-log-container" class="log-container"></div>
+                <div id="activity-log-container" class="log-container">
+                    <!-- Activity logs will be dynamically inserted here -->
+                </div>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    
+    <!-- Updated JS path and added activity log functionality -->
+    <script src="/static/js/script.js"></script>
+    <script>
+        // Fetch and display activity logs
+        async function loadActivityLog() {
+            try {
+                const response = await fetch('/api/activity');
+                const activities = await response.json();
+                
+                const container = document.getElementById('activity-log-container');
+                container.innerHTML = '';
+                
+                if (activities.length === 0) {
+                    container.innerHTML = '<p>No activities logged yet.</p>';
+                    return;
+                }
+                
+                activities.reverse().forEach(activity => {
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry';
+                    entry.innerHTML = `
+                        <strong>${activity.user}</strong>: ${activity.action}
+                        <div class="log-timestamp">${new Date(activity.timestamp).toLocaleString()}</div>
+                    `;
+                    container.appendChild(entry);
+                });
+            } catch (error) {
+                console.error('Error loading activity log:', error);
+            }
+        }
+        
+        // Export functionality
+        function exportActivityLog() {
+            // Implement your export logic here
+            alert('Export functionality will be implemented');
+        }
+        
+        // Clear functionality (would need backend implementation)
+        function clearActivityLog() {
+            if (confirm('Are you sure you want to clear the activity log?')) {
+                // This would require a DELETE endpoint on your backend
+                alert('Clear functionality will be implemented');
+            }
+        }
+        
+        // Load logs when page loads
+        document.addEventListener('DOMContentLoaded', loadActivityLog);
+    </script>
 </body>
 </html>
