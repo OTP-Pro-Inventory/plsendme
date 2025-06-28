@@ -14,6 +14,25 @@ app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-here'
 app.config['DATA_FOLDER'] = os.path.join(os.path.dirname(__file__), 'data')
 os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
 
+# Path to your inventory data
+INVENTORY_FILE = os.path.join('data', 'inventory.json')
+
+@app.route('/get_inventory')
+def get_inventory():
+    """Endpoint to get inventory data"""
+    try:
+        with open(INVENTORY_FILE) as f:
+            return jsonify(json.load(f))
+    except FileNotFoundError:
+        return jsonify({"error": "Inventory file not found"}), 404
+
+@app.route('/record_removal', methods=['POST'])
+def record_removal():
+    """Endpoint to record item removals"""
+    data = request.json
+    # Add your logic here to update inventory and record removal
+    return jsonify({"status": "success"})
+    
 # User authentication - consider using proper database in production
 USERS = {
     "sallen": "Bigmac100",
