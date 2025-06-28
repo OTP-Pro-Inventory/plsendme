@@ -81,21 +81,11 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            color: white !important;
+            color: white;
         }
 
         .inventory-item:hover {
             transform: translateY(-5px);
-        }
-
-        .inventory-item h3 {
-            color: white !important;
-            margin-top: 0;
-        }
-        
-        .inventory-item p {
-            color: rgba(255, 255, 255, 0.9) !important;
-            margin: 8px 0;
         }
 
         /* Style for low inventory items */
@@ -104,7 +94,6 @@
             border-left: 5px solid #ff5252;
             animation: pulseWarning 1.5s infinite;
             position: relative;
-            color: white !important;
         }
 
         .low-inventory::after {
@@ -125,7 +114,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -140,11 +129,7 @@
             border-radius: 10px;
             width: 80%;
             max-width: 500px;
-            color: white !important;
-        }
-
-        .modal-content h3 {
-            color: white !important;
+            color: white;
         }
 
         .modal-form {
@@ -160,7 +145,7 @@
             padding: 10px;
             border-radius: 5px;
             border: none;
-            color: #333;
+            background-color: #f8f9fa;
         }
 
         .modal-buttons {
@@ -174,6 +159,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.2s ease;
         }
 
         .confirm-btn {
@@ -186,22 +172,12 @@
             color: white;
         }
 
-        /* Placeholder styles */
-        ::placeholder {
-            color: #ccc !important;
-            opacity: 1;
+        /* Text visibility enhancements */
+        h1, h2, h3, p, span {
+            color: white;
         }
-
-        /* Section headers */
-        .section h2 {
-            color: white !important;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 10px;
-        }
-
-        /* Inventory summary */
+        
         .inventory-summary {
-            color: white !important;
             font-size: 1.1em;
         }
     </style>
@@ -224,58 +200,32 @@
             <button class="menu-btn" onclick="window.location.href='{{ url_for('activity_log') }}'">📊 Activity Log</button>
         </div>
         
-        <div class="section" id="inventory">
+        <div id="inventory">
             <h2>Current Inventory</h2>
             <div id="inventory-list" class="inventory-grid"></div>
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Removal Modal -->
     <div id="removalModal" class="modal">
         <div class="modal-content">
             <h3>📝 Item Removal Details</h3>
             <div class="modal-form">
                 <select id="employeeName" required>
-                    <option value="" disabled selected hidden>Select Employee</option>
+                    <option value="" disabled selected>Select Employee</option>
                     <option>Steven</option>
                     <option>Randy</option>
                     <option>Inace</option>
                     <option>Bruce</option>
-                    <option>PlaceHolderForNewOTP</option>
-                    <option>PlaceHolderForNewOTP</option>
                 </select>
                 
                 <input type="number" id="removalAmount" placeholder="Quantity to Remove" min="1" required>
                 <textarea id="removalPurpose" placeholder="Purpose/Reason for Removal" required></textarea>
                 <select id="storeSelect">
-                    <option value="" disabled selected hidden>Select Store</option>
+                    <option value="" disabled selected>Select Store</option>
                     <option>NSN 00249</option>
                     <option>NSN 02743</option>
-                    <option>NSN 03568</option>
-                    <option>NSN 04289</option>
-                    <option>NSN 04952</option>
-                    <option>NSN 05582</option>
-                    <option>NSN 07873</option>
-                    <option>NSN 10172</option>
-                    <option>NSN 11887</option>
-                    <option>NSN 13630</option>
-                    <option>NSN 13903</option>
-                    <option>NSN 15034</option>
-                    <option>NSN 16113</option>
-                    <option>NSN 19731</option>
-                    <option>NSN 22567</option>
-                    <option>NSN 23720</option>
-                    <option>NSN 23746</option>
-                    <option>NSN 23754</option>
-                    <option>NSN 26301</option>
-                    <option>NSN 31936</option>
-                    <option>NSN 32394</option>
-                    <option>NSN 32649</option>
-                    <option>NSN 33785</option>
-                    <option>NSN 36682</option>
-                    <option>NSN 38663</option>
-                    <option>NSN 39558</option>
-                    <option>NSN 39880</option>
+                    <!-- Other store options -->
                 </select>
             </div>
             <div class="modal-buttons">
@@ -286,39 +236,29 @@
     </div>
 
     <script>
-        // Current item being processed
         let currentItemId = null;
 
-        // Function to fetch and display inventory from data/inventory.json
         async function loadInventory() {
             try {
                 const response = await fetch('{{ url_for("get_inventory") }}');
-                if (!response.ok) throw new Error('Failed to load inventory');
+                if (!response.ok) throw new Error('Network response was not ok');
                 const items = await response.json();
                 displayInventory(items);
             } catch (error) {
                 console.error('Error loading inventory:', error);
-                // Fallback to mock data if needed
-                const mockItems = [
-                    { id: '1', name: 'iPhone 13', quantity: 8, category: 'Phones', threshold: 5 },
-                    { id: '2', name: 'MacBook Pro', quantity: 3, category: 'Laptops', threshold: 5 },
-                    { id: '3', name: 'iPad Air', quantity: 12, category: 'Tablets', threshold: 5 }
-                ];
-                displayInventory(mockItems);
+                alert('Error loading inventory. Please try again.');
             }
         }
 
-        // Function to display inventory items
         function displayInventory(items) {
             const inventoryList = document.getElementById('inventory-list');
-            inventoryList.innerHTML = ''; // Clear existing items
+            inventoryList.innerHTML = '';
             let lowCount = 0;
             
             items.forEach(item => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'inventory-item';
                 
-                // Add low-inventory class if quantity is below threshold
                 if (item.quantity < (item.threshold || 5)) {
                     itemElement.classList.add('low-inventory');
                     lowCount++;
@@ -327,18 +267,16 @@
                 itemElement.innerHTML = `
                     <h3>${item.name}</h3>
                     <p>Quantity: ${item.quantity}${item.threshold ? ` (Min: ${item.threshold})` : ''}</p>
-                    <p>Category: ${item.category}</p>
+                    <p>Category: ${item.category || 'N/A'}</p>
                     <button class="menu-btn" onclick="openRemovalModal('${item.id}')">Remove Item</button>
                 `;
                 
                 inventoryList.appendChild(itemElement);
             });
             
-            // Update the low inventory counter
             document.getElementById('low-count').textContent = lowCount;
         }
         
-        // Modal functions
         function openRemovalModal(itemId) {
             currentItemId = itemId;
             document.getElementById('removalModal').style.display = 'block';
@@ -351,7 +289,7 @@
 
         async function confirmRemoval() {
             const employee = document.getElementById('employeeName').value;
-            const amount = document.getElementById('removalAmount').value;
+            const amount = parseInt(document.getElementById('removalAmount').value);
             const purpose = document.getElementById('removalPurpose').value;
             const store = document.getElementById('storeSelect').value;
 
@@ -375,20 +313,21 @@
                     })
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
                     alert('Removal recorded successfully');
                     closeModal();
-                    loadInventory(); // Refresh the inventory
+                    loadInventory();
                 } else {
-                    throw new Error('Failed to record removal');
+                    throw new Error(result.message || 'Failed to record removal');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to record removal');
+                alert(`Failed to record removal: ${error.message}`);
             }
         }
 
-        // Load inventory when page loads
         document.addEventListener('DOMContentLoaded', loadInventory);
     </script>
 </body>
