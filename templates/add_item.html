@@ -1,68 +1,176 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-.custom-button {
-  display: inline-block;
-  padding: 12px 24px;
-  margin: 10px;
-  background: linear-gradient(to right, #d64541, #f1c40f);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
-}
-.custom-button:hover {
-  transform: scale(1.05);
-}
-</style>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Item</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Updated CSS path -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .custom-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .custom-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Form styling */
+        .add-item-form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .add-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s ease;
+        }
+        
+        .add-btn:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
 <body>
-
-<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+    <!-- Updated logout link -->
+    <a href="{{ url_for('logout') }}" class="custom-button">🚪 LOGOUT</a>
 
     <div class="container">
         <div class="header">
             <h1>➕ Add New Device</h1>
         </div>
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
-            <button class="menu-btn" onclick="location.href='inventory.html'">📦 Inventory</button>
-            <button class="menu-btn" onclick="location.href='removals.html'">📋 Removal History</button>
-            <button class="menu-btn" onclick="location.href='activity_log.html'">📊 Activity Log</button>
+            <!-- Updated navigation using url_for -->
+            <button class="menu-btn" onclick="location.href='{{ url_for('index') }}'">🏠 Home</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('inventory') }}'">📦 Inventory</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('removals') }}'">📋 Removal History</button>
+            <button class="menu-btn" onclick="location.href='{{ url_for('activity_log') }}'">📊 Activity Log</button>
         </div>
         <div class="section" id="add-item">
             <h2>Add New Electronic Device</h2>
             <div class="add-item-form">
                 <div class="form-group">
                     <label for="itemName">Device Name</label>
-                    <input type="text" id="itemName" placeholder="e.g., iPhone 15 Pro">
+                    <input type="text" id="itemName" placeholder="e.g., iPhone 15 Pro" required>
                 </div>
                 <div class="form-group">
                     <label for="itemUPC">UPC Code</label>
-                    <input type="text" id="itemUPC" placeholder="e.g., 123456789012">
+                    <input type="text" id="itemUPC" placeholder="e.g., 123456789012" required>
                 </div>
                 <div class="form-group">
                     <label for="itemModel">Model Number</label>
-                    <input type="text" id="itemModel" placeholder="e.g., A3101">
+                    <input type="text" id="itemModel" placeholder="e.g., A3101" required>
                 </div>
                 <div class="form-group">
                     <label for="itemQuantity">Initial Quantity</label>
-                    <input type="number" id="itemQuantity" min="0" value="1">
+                    <input type="number" id="itemQuantity" min="1" value="1" required>
                 </div>
                 <button class="add-btn" onclick="addItem()">Add Device to Inventory</button>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    
+    <!-- Updated JS path and added form handling -->
+    <script src="/static/js/script.js"></script>
+    <script>
+        async function addItem() {
+            // Get form values
+            const item = {
+                name: document.getElementById('itemName').value,
+                upc: document.getElementById('itemUPC').value,
+                model: document.getElementById('itemModel').value,
+                quantity: parseInt(document.getElementById('itemQuantity').value),
+                timestamp: new Date().toISOString()
+            };
+            
+            // Basic validation
+            if (!item.name || !item.upc || !item.model || !item.quantity) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                // Get current inventory
+                const response = await fetch('/api/inventory');
+                let inventory = await response.json();
+                
+                // Check if item already exists
+                const existingItem = inventory.find(i => i.upc === item.upc);
+                if (existingItem) {
+                    if (confirm('Item already exists. Update quantity instead?')) {
+                        existingItem.quantity += item.quantity;
+                    } else {
+                        return;
+                    }
+                } else {
+                    // Add new item
+                    inventory.push(item);
+                }
+                
+                // Save updated inventory
+                const saveResponse = await fetch('/api/inventory', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(inventory)
+                });
+                
+                if (saveResponse.ok) {
+                    alert('Item successfully added!');
+                    // Reset form
+                    document.getElementById('itemName').value = '';
+                    document.getElementById('itemUPC').value = '';
+                    document.getElementById('itemModel').value = '';
+                    document.getElementById('itemQuantity').value = '1';
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error adding item:', error);
+                alert('Error adding item. Please try again.');
+            }
+        }
+    </script>
 </body>
 </html>
