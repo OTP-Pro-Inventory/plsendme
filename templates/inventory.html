@@ -225,7 +225,31 @@
                     <option value="" disabled selected>Select Store</option>
                     <option>NSN 00249</option>
                     <option>NSN 02743</option>
-                    <!-- Other store options -->
+                    <option>NSN 03568</option>
+                    <option>NSN 04289</option>
+                    <option>NSN 04952</option>
+                    <option>NSN 05582</option>
+                    <option>NSN 07873</option>
+                    <option>NSN 10172</option>
+                    <option>NSN 11887</option>
+                    <option>NSN 13630</option>
+                    <option>NSN 13903</option>
+                    <option>NSN 15034</option>
+                    <option>NSN 16113</option>
+                    <option>NSN 19731</option>
+                    <option>NSN 22567</option>
+                    <option>NSN 23720</option>
+                    <option>NSN 23746</option>
+                    <option>NSN 23754</option>
+                    <option>NSN 26301</option>
+                    <option>NSN 31936</option>
+                    <option>NSN 32394</option>
+                    <option>NSN 32649</option>
+                    <option>NSN 33785</option>
+                    <option>NSN 36682</option>
+                    <option>NSN 38663</option>
+                    <option>NSN 39558</option>
+                    <option>NSN 39880</option>
                 </select>
             </div>
             <div class="modal-buttons">
@@ -306,21 +330,25 @@
                     },
                     body: JSON.stringify({
                         itemId: currentItemId,
-                        employee,
-                        amount,
-                        purpose,
-                        store
+                        amount: amount,
+                        employee: employee,
+                        purpose: purpose,
+                        store: store
                     })
                 });
 
                 const result = await response.json();
                 
-                if (response.ok && result.success) {
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to record removal');
+                }
+
+                if (result.success) {
                     alert('Removal recorded successfully');
                     closeModal();
                     loadInventory();
                 } else {
-                    throw new Error(result.message || 'Failed to record removal');
+                    throw new Error(result.message || 'Unknown error occurred');
                 }
             } catch (error) {
                 console.error('Error:', error);
