@@ -14,6 +14,28 @@ app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-here'
 app.config['DATA_FOLDER'] = os.path.join(os.path.dirname(__file__), 'data')
 os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
 
+# path for sill add items
+@app.route('/add_item', methods=['POST'])
+def add_item():
+    try:
+        new_item = request.get_json()
+        
+        # Load current inventory
+        inventory_path = os.path.join('data', 'inventory.json')
+        with open(inventory_path, 'r') as f:
+            inventory = json.load(f)
+        
+        # Add new item
+        inventory.append(new_item)
+        
+        # Save updated inventory
+        with open(inventory_path, 'w') as f:
+            json.dump(inventory, f, indent=2)
+        
+        return jsonify({"success": True, "message": "Item added successfully"}), 200
+    
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 # Path to your inventory data
 INVENTORY_FILE = os.path.join('data', 'inventory.json')
 
