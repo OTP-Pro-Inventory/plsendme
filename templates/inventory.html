@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,6 +18,28 @@
 .custom-button:hover {
   transform: scale(1.05);
 }
+
+/* Style for low inventory items */
+.low-inventory {
+  background-color: #ffdddd;
+  border-left: 5px solid #ff5252;
+  animation: pulseWarning 1.5s infinite;
+  position: relative;
+}
+
+.low-inventory::after {
+  content: "❗";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 1.5em;
+}
+
+@keyframes pulseWarning {
+  0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+}
 </style>
 
     <meta charset="UTF-8">
@@ -33,6 +54,7 @@
     <div class="container">
         <div class="header">
             <h1>📱 Device Inventory</h1>
+            <p class="inventory-summary">Items below threshold: <span id="low-count">0</span></p>
         </div>
         <div class="menu">
             <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
@@ -103,5 +125,41 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // This function would be called when loading inventory items
+        function displayInventory(items) {
+            const inventoryList = document.getElementById('inventory-list');
+            let lowCount = 0;
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'inventory-item';
+                
+                // Add low-inventory class if quantity is below threshold
+                if (item.quantity < 5) {
+                    itemElement.classList.add('low-inventory');
+                    lowCount++;
+                }
+                
+                itemElement.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>Quantity: ${item.quantity}</p>
+                    <p>Category: ${item.category}</p>
+                    <button onclick="openRemovalModal('${item.id}')">Remove Item</button>
+                `;
+                
+                inventoryList.appendChild(itemElement);
+            });
+            
+            // Update the low inventory counter
+            document.getElementById('low-count').textContent = lowCount;
+        }
+        
+        // You'll need to call displayInventory with your actual data
+        // For example, after fetching from your API:
+        // fetch('/api/inventory')
+        //     .then(response => response.json())
+        //     .then(data => displayInventory(data));
+    </script>
 </body>
 </html>
