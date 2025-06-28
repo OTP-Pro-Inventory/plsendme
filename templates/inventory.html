@@ -81,18 +81,30 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
+            color: white !important;
         }
 
         .inventory-item:hover {
             transform: translateY(-5px);
         }
 
+        .inventory-item h3 {
+            color: white !important;
+            margin-top: 0;
+        }
+        
+        .inventory-item p {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin: 8px 0;
+        }
+
         /* Style for low inventory items */
         .low-inventory {
-            background-color: rgba(255, 221, 221, 0.2);
+            background-color: rgba(255, 221, 221, 0.3);
             border-left: 5px solid #ff5252;
             animation: pulseWarning 1.5s infinite;
             position: relative;
+            color: white !important;
         }
 
         .low-inventory::after {
@@ -128,6 +140,11 @@
             border-radius: 10px;
             width: 80%;
             max-width: 500px;
+            color: white !important;
+        }
+
+        .modal-content h3 {
+            color: white !important;
         }
 
         .modal-form {
@@ -143,6 +160,7 @@
             padding: 10px;
             border-radius: 5px;
             border: none;
+            color: #333;
         }
 
         .modal-buttons {
@@ -166,6 +184,25 @@
         .cancel-btn {
             background: linear-gradient(to right, #e74c3c, #c0392b);
             color: white;
+        }
+
+        /* Placeholder styles */
+        ::placeholder {
+            color: #ccc !important;
+            opacity: 1;
+        }
+
+        /* Section headers */
+        .section h2 {
+            color: white !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        /* Inventory summary */
+        .inventory-summary {
+            color: white !important;
+            font-size: 1.1em;
         }
     </style>
 </head>
