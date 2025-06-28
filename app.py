@@ -99,6 +99,11 @@ def logout():
     return redirect(url_for('login'))
 
 # Inventory routes
+@app.route('/get_stats')
+def get_stats():
+    """Endpoint to provide inventory statistics"""
+    return jsonify(mock_stats)
+
 @app.route('/inventory')
 @login_required
 def inventory():
