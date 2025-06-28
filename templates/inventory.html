@@ -1,67 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-.custom-button {
-  display: inline-block;
-  padding: 12px 24px;
-  margin: 10px;
-  background: linear-gradient(to right, #d64541, #f1c40f);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
-}
-.custom-button:hover {
-  transform: scale(1.05);
-}
-
-/* Style for low inventory items */
-.low-inventory {
-  background-color: #ffdddd;
-  border-left: 5px solid #ff5252;
-  animation: pulseWarning 1.5s infinite;
-  position: relative;
-}
-
-.low-inventory::after {
-  content: "❗";
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  font-size: 1.5em;
-}
-
-@keyframes pulseWarning {
-  0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
-}
-</style>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Permanent gradient background */
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .menu-btn {
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        .custom-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .custom-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Inventory grid styles */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .inventory-item:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Style for low inventory items */
+        .low-inventory {
+            background-color: rgba(255, 221, 221, 0.2);
+            border-left: 5px solid #ff5252;
+            animation: pulseWarning 1.5s infinite;
+            position: relative;
+        }
+
+        .low-inventory::after {
+            content: "❗";
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 1.5em;
+        }
+
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: #2c3e50;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .modal-form select, 
+        .modal-form input, 
+        .modal-form textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .cancel-btn {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+    </style>
 </head>
 <body>
-
-<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+    <div style="text-align: right;">
+        <a href="{{ url_for('logout') }}" class="custom-button">🚪 LOGOUT</a>
+    </div>
 
     <div class="container">
         <div class="header">
             <h1>📱 Device Inventory</h1>
             <p class="inventory-summary">Items below threshold: <span id="low-count">0</span></p>
         </div>
+        
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
-            <button class="menu-btn" onclick="location.href='add_item.html'">➕ Add Item</button>
-            <button class="menu-btn" onclick="location.href='removals.html'">📋 Removal History</button>
-            <button class="menu-btn" onclick="location.href='activity_log.html'">📊 Activity Log</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('index') }}'">🏠 Home</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('add_item') }}'">➕ Add Item</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('removals') }}'">📋 Removal History</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('activity_log') }}'">📊 Activity Log</button>
         </div>
+        
         <div class="section" id="inventory">
             <h2>Current Inventory</h2>
             <div id="inventory-list" class="inventory-grid"></div>
@@ -73,17 +198,16 @@
         <div class="modal-content">
             <h3>📝 Item Removal Details</h3>
             <div class="modal-form">
+                <select id="employeeName" required>
+                    <option value="" disabled selected hidden>Select Employee</option>
+                    <option>Steven</option>
+                    <option>Randy</option>
+                    <option>Inace</option>
+                    <option>Bruce</option>
+                    <option>PlaceHolderForNewOTP</option>
+                    <option>PlaceHolderForNewOTP</option>
+                </select>
                 
-    <select id="employeeName" required>
-        <option value="" disabled selected hidden>Select Employee</option>
-        <option>Steven</option>
-        <option>Randy</option>
-        <option>Inace</option>
-        <option>Bruce</option>
-        <option>PlaceHolderForNewOTP</option>
-        <option>PlaceHolderForNewOTP</option>
-    </select>
-    
                 <input type="number" id="removalAmount" placeholder="Quantity to Remove" min="1" required>
                 <textarea id="removalPurpose" placeholder="Purpose/Reason for Removal" required></textarea>
                 <select id="storeSelect">
@@ -124,11 +248,33 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
     <script>
-        // This function would be called when loading inventory items
+        // Current item being processed
+        let currentItemId = null;
+
+        // Function to fetch and display inventory from data/inventory.json
+        async function loadInventory() {
+            try {
+                const response = await fetch('{{ url_for("get_inventory") }}');
+                if (!response.ok) throw new Error('Failed to load inventory');
+                const items = await response.json();
+                displayInventory(items);
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                // Fallback to mock data if needed
+                const mockItems = [
+                    { id: '1', name: 'iPhone 13', quantity: 8, category: 'Phones', threshold: 5 },
+                    { id: '2', name: 'MacBook Pro', quantity: 3, category: 'Laptops', threshold: 5 },
+                    { id: '3', name: 'iPad Air', quantity: 12, category: 'Tablets', threshold: 5 }
+                ];
+                displayInventory(mockItems);
+            }
+        }
+
+        // Function to display inventory items
         function displayInventory(items) {
             const inventoryList = document.getElementById('inventory-list');
+            inventoryList.innerHTML = ''; // Clear existing items
             let lowCount = 0;
             
             items.forEach(item => {
@@ -136,16 +282,16 @@
                 itemElement.className = 'inventory-item';
                 
                 // Add low-inventory class if quantity is below threshold
-                if (item.quantity < 5) {
+                if (item.quantity < (item.threshold || 5)) {
                     itemElement.classList.add('low-inventory');
                     lowCount++;
                 }
                 
                 itemElement.innerHTML = `
                     <h3>${item.name}</h3>
-                    <p>Quantity: ${item.quantity}</p>
+                    <p>Quantity: ${item.quantity}${item.threshold ? ` (Min: ${item.threshold})` : ''}</p>
                     <p>Category: ${item.category}</p>
-                    <button onclick="openRemovalModal('${item.id}')">Remove Item</button>
+                    <button class="menu-btn" onclick="openRemovalModal('${item.id}')">Remove Item</button>
                 `;
                 
                 inventoryList.appendChild(itemElement);
@@ -155,11 +301,58 @@
             document.getElementById('low-count').textContent = lowCount;
         }
         
-        // You'll need to call displayInventory with your actual data
-        // For example, after fetching from your API:
-        // fetch('/api/inventory')
-        //     .then(response => response.json())
-        //     .then(data => displayInventory(data));
+        // Modal functions
+        function openRemovalModal(itemId) {
+            currentItemId = itemId;
+            document.getElementById('removalModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('removalModal').style.display = 'none';
+            currentItemId = null;
+        }
+
+        async function confirmRemoval() {
+            const employee = document.getElementById('employeeName').value;
+            const amount = document.getElementById('removalAmount').value;
+            const purpose = document.getElementById('removalPurpose').value;
+            const store = document.getElementById('storeSelect').value;
+
+            if (!employee || !amount || !purpose) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('{{ url_for("record_removal") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        itemId: currentItemId,
+                        employee,
+                        amount,
+                        purpose,
+                        store
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Removal recorded successfully');
+                    closeModal();
+                    loadInventory(); // Refresh the inventory
+                } else {
+                    throw new Error('Failed to record removal');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to record removal');
+            }
+        }
+
+        // Load inventory when page loads
+        document.addEventListener('DOMContentLoaded', loadInventory);
     </script>
 </body>
 </html>
