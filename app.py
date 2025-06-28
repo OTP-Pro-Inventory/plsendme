@@ -117,12 +117,29 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    try:
+        inventory = read_json(INVENTORY_FILE)
+        removals = read_json(REMOVALS_FILE)
+        activities = read_json(ACTIVITY_FILE)
+        
+        stats = {
+            "total_items": sum(item['quantity'] for item in inventory),
+            "low_stock": sum(1 for item in inventory if item['quantity'] < item.get('threshold', 5)),
+            "total_products": len(inventory),
+            "total_removals": len(removals),
+            "recent_activity": activities[-5:] if len(activities) > 5 else activities
+        }
+        
+        return render_template('index.html', stats=stats)
+    except Exception as e:
+        flash(f'Error loading dashboard: {str(e)}', 'danger')
+        return render_template('index.html', stats={})
 
 @app.route('/inventory')
 @login_required
 def inventory():
-    return render_template('inventory.html')
+    inventory_data = read_json(INVENTORY_FILE)
+    return render_template('inventory.html', inventory=inventory_data)
 
 @app.route('/add-item', methods=['GET', 'POST'])
 @login_required
@@ -156,15 +173,30 @@ def add_item():
 @app.route('/removals')
 @login_required
 def removals():
-    return render_template('removals.html')
+    removals_data = read_json(REMOVALS_FILE)
+    inventory_data = read_json(INVENTORY_FILE)
+    
+    # Create a mapping of item_id to item details for quick lookup
+    item_map = {item['id']: item for item in inventory_data}
+    
+    # Enhance removal data with item details
+    enhanced_removals = []
+    for removal in removals_data:
+        item = item_map.get(removal['item_id'], {})
+        enhanced_removal = removal.copy()
+        enhanced_removal['item_details'] = item
+        enhanced_removals.append(enhanced_removal)
+    
+    return render_template('removals.html', removals=enhanced_removals)
 
 @app.route('/activity-log')
 @login_required
 def activity_log():
-    return render_template('activity_log.html')
+    activities = read_json(ACTIVITY_FILE)
+    return render_template('activity_log.html', activities=activities)
 
 # ======================
-# API ENDPOINTS (IMPROVED)
+# API ENDPOINTS
 # ======================
 
 @app.route('/api/stats')
@@ -172,10 +204,15 @@ def activity_log():
 def get_stats():
     try:
         inventory = read_json(INVENTORY_FILE)
+        removals = read_json(REMOVALS_FILE)
+        activities = read_json(ACTIVITY_FILE)
+        
         stats = {
             "total_items": sum(item['quantity'] for item in inventory),
             "low_stock": sum(1 for item in inventory if item['quantity'] < item.get('threshold', 5)),
-            "total_products": len(inventory)
+            "total_products": len(inventory),
+            "total_removals": len(removals),
+            "recent_activity": activities[-5:] if len(activities) > 5 else activities
         }
         return jsonify(stats)
     except Exception as e:
@@ -226,7 +263,7 @@ def record_removal():
         
         # Record removal
         removal = {
-            "id": str(uuid.uuid4()),
+            "id": str(uuid.uuid4()),  # Generate new UUID for the removal record
             "item_id": item_id,
             "item_name": item['name'],
             "amount": amount,
@@ -259,7 +296,21 @@ def record_removal():
 @login_required
 def get_removals():
     try:
-        return jsonify(read_json(REMOVALS_FILE))
+        removals_data = read_json(REMOVALS_FILE)
+        inventory_data = read_json(INVENTORY_FILE)
+        
+        # Create a mapping of item_id to item details for quick lookup
+        item_map = {item['id']: item for item in inventory_data}
+        
+        # Enhance removal data with item details
+        enhanced_removals = []
+        for removal in removals_data:
+            item = item_map.get(removal['item_id'], {})
+            enhanced_removal = removal.copy()
+            enhanced_removal['item_details'] = item
+            enhanced_removals.append(enhanced_removal)
+            
+        return jsonify(enhanced_removals)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
