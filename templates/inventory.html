@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+.custom-button {
+  display: inline-block;
+  padding: 12px 24px;
+  margin: 10px;
+  background: linear-gradient(to right, #d64541, #f1c40f);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  text-decoration: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+.custom-button:hover {
+  transform: scale(1.05);
+}
+</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>📱 Device Inventory</h1>
+        </div>
+        <div class="menu">
+            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
+            <button class="menu-btn" onclick="location.href='add_item.html'">➕ Add Item</button>
+            <button class="menu-btn" onclick="location.href='removals.html'">📋 Removal History</button>
+            <button class="menu-btn" onclick="location.href='activity_log.html'">📊 Activity Log</button>
+        </div>
+        <div class="section" id="inventory">
+            <h2>Current Inventory</h2>
+            <div id="inventory-list" class="inventory-grid"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="removalModal" class="modal">
+        <div class="modal-content">
+            <h3>📝 Item Removal Details</h3>
+            <div class="modal-form">
+                
+    <select id="employeeName" required>
+        <option value="" disabled selected hidden>Select Employee</option>
+        <option>Steven</option>
+        <option>Randy</option>
+        <option>Inace</option>
+        <option>Bruce</option>
+        <option>PlaceHolderForNewOTP</option>
+        <option>PlaceHolderForNewOTP</option>
+    </select>
+    
+                <input type="number" id="removalAmount" placeholder="Quantity to Remove" min="1" required>
+                <textarea id="removalPurpose" placeholder="Purpose/Reason for Removal" required></textarea>
+                <select id="storeSelect">
+                    <option value="" disabled selected hidden>Select Store</option>
+                    <option>NSN 00249</option>
+                    <option>NSN 02743</option>
+                    <option>NSN 03568</option>
+                    <option>NSN 04289</option>
+                    <option>NSN 04952</option>
+                    <option>NSN 05582</option>
+                    <option>NSN 07873</option>
+                    <option>NSN 10172</option>
+                    <option>NSN 11887</option>
+                    <option>NSN 13630</option>
+                    <option>NSN 13903</option>
+                    <option>NSN 15034</option>
+                    <option>NSN 16113</option>
+                    <option>NSN 19731</option>
+                    <option>NSN 22567</option>
+                    <option>NSN 23720</option>
+                    <option>NSN 23746</option>
+                    <option>NSN 23754</option>
+                    <option>NSN 26301</option>
+                    <option>NSN 31936</option>
+                    <option>NSN 32394</option>
+                    <option>NSN 32649</option>
+                    <option>NSN 33785</option>
+                    <option>NSN 36682</option>
+                    <option>NSN 38663</option>
+                    <option>NSN 39558</option>
+                    <option>NSN 39880</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-btn" onclick="confirmRemoval()">Confirm Removal</button>
+                <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

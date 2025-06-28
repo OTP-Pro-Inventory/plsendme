@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f1c40f, #e67e22);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #d35400;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .login-button {
+      margin-top: 20px;
+      background: linear-gradient(to right, #d64541, #f1c40f);
+      color: white;
+      font-weight: bold;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s ease;
+    }
+
+    .login-button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <form class="login-container" method="POST" action="/login">
+    <h2>Login</h2>
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="login-button">🚪 Login</button>
+  </form>
+
+</body>
+</html>

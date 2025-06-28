@@ -1,0 +1,32 @@
+[
+  {
+    "amount": 7,
+    "date": "6/3/2025, 3:06:52 AM",
+    "employee": "Jane Doe",
+    "itemName": "Johny",
+    "model": "EF62356",
+    "purpose": "ffghft",
+    "store": "NSN 00249",
+    "upc": "1238961234"
+  },
+  {
+    "amount": 1,
+    "date": "6/3/2025, 3:06:17 AM",
+    "employee": "Jane Doe",
+    "itemName": "Johny",
+    "model": "EF62356",
+    "purpose": "Inventory updater",
+    "store": "NSN 00249",
+    "upc": "1238961234"
+  },
+  {
+    "amount": 1,
+    "date": "6/2/2025, 4:21:10 AM",
+    "employee": "Keelyn",
+    "itemName": "Johny",
+    "model": "EF62356",
+    "purpose": "Internet Test",
+    "store": "NSN 00249",
+    "upc": "1238961234"
+  }
+]

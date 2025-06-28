@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+.custom-button {
+  display: inline-block;
+  padding: 12px 24px;
+  margin: 10px;
+  background: linear-gradient(to right, #d64541, #f1c40f);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  text-decoration: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+.custom-button:hover {
+  transform: scale(1.05);
+}
+</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Removal History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>📋 Removal History</h1>
+        </div>
+        <div class="menu">
+            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
+            <button class="menu-btn" onclick="location.href='inventory.html'">📦 Inventory</button>
+            <button class="menu-btn" onclick="location.href='add_item.html'">➕ Add Item</button>
+            <button class="menu-btn" onclick="location.href='activity_log.html'">📊 Activity Log</button>
+        </div>
+        <div class="section" id="removals">
+            <h2>Removal History</h2>
+            <div id="removal-list" class="removal-list"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
