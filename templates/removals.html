@@ -1,50 +1,259 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-.custom-button {
-  display: inline-block;
-  padding: 12px 24px;
-  margin: 10px;
-  background: linear-gradient(to right, #d64541, #f1c40f);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
-}
-.custom-button:hover {
-  transform: scale(1.05);
-}
-</style>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Removal History</title>
+    <title>Removal History - OTP Pro Inventory</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .custom-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .custom-button:hover {
+            transform: scale(1.05);
+        }
+
+        .removal-list {
+            margin-top: 20px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .removal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .removal-table th {
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .removal-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .removal-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .removal-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .status-pending {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .status-completed {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter input, .search-filter select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .search-filter button {
+            padding: 10px 20px;
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background: linear-gradient(to right, #d64541, #f1c40f);
+            color: white;
+            border-color: transparent;
+        }
+    </style>
 </head>
 <body>
-
-<a href="/logout" class="custom-button">🚪 LOGOUT</a>
+    <div style="text-align: right;">
+        <a href="/logout" class="custom-button"><i class="fas fa-sign-out-alt"></i> LOGOUT</a>
+    </div>
 
     <div class="container">
         <div class="header">
-            <h1>📋 Removal History</h1>
+            <h1><i class="fas fa-history"></i> Removal History</h1>
+            <p>Track all inventory removal transactions</p>
         </div>
+        
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='index.html'">🏠 Home</button>
-            <button class="menu-btn" onclick="location.href='inventory.html'">📦 Inventory</button>
-            <button class="menu-btn" onclick="location.href='add_item.html'">➕ Add Item</button>
-            <button class="menu-btn" onclick="location.href='activity_log.html'">📊 Activity Log</button>
+            <button class="menu-btn" onclick="location.href='index.html'"><i class="fas fa-home"></i> Home</button>
+            <button class="menu-btn" onclick="location.href='inventory.html'"><i class="fas fa-boxes"></i> Inventory</button>
+            <button class="menu-btn" onclick="location.href='add_item.html'"><i class="fas fa-plus-circle"></i> Add Item</button>
+            <button class="menu-btn" onclick="location.href='activity_log.html'"><i class="fas fa-clipboard-list"></i> Activity Log</button>
         </div>
+
         <div class="section" id="removals">
-            <h2>Removal History</h2>
-            <div id="removal-list" class="removal-list"></div>
+            <div class="search-filter">
+                <input type="text" id="searchInput" placeholder="Search by item or employee...">
+                <select id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="dateFilter">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+                <button onclick="filterRemovals()"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+
+            <div class="removal-list">
+                <table class="removal-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Employee</th>
+                            <th>Store</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="removal-data">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <button onclick="changePage(-1)"><i class="fas fa-chevron-left"></i></button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button onclick="changePage(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // Sample data - replace with actual data from your backend
+        const removalData = [
+            {
+                date: '2023-06-15',
+                item: 'iPhone 13',
+                quantity: 2,
+                employee: 'Steven Allen',
+                store: 'NSN 00249',
+                purpose: 'Store display replacement',
+                status: 'completed'
+            },
+            {
+                date: '2023-06-14',
+                item: 'Samsung Galaxy S22',
+                quantity: 1,
+                employee: 'Bruce Gaines',
+                store: 'NSN 02743',
+                purpose: 'Customer demo unit',
+                status: 'completed'
+            },
+            {
+                date: '2023-06-13',
+                item: 'iPad Pro',
+                quantity: 3,
+                employee: 'Randy Smith',
+                store: 'NSN 03568',
+                purpose: 'Employee training',
+                status: 'pending'
+            }
+        ];
+
+        // Function to populate the removal table
+        function populateRemovalTable(data) {
+            const tableBody = document.getElementById('removal-data');
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Format status with appropriate class
+                const statusClass = item.status === 'completed' ? 'status-completed' : 'status-pending';
+                const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.item}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.employee}</td>
+                    <td>${item.store}</td>
+                    <td>${item.purpose}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Filter function (to be implemented)
+        function filterRemovals() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            // Filter logic would go here
+            // For now, we'll just use the sample data
+            populateRemovalTable(removalData);
+        }
+
+        // Pagination function (to be implemented)
+        function changePage(direction) {
+            // Pagination logic would go here
+        }
+
+        // Initialize the table when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            populateRemovalTable(removalData);
+        });
+    </script>
 </body>
 </html>
