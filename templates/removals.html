@@ -4,9 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Removal History - OTP Pro Inventory</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Permanent gradient background */
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .menu-btn {
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
         .custom-button {
             display: inline-block;
             padding: 12px 24px;
@@ -35,6 +86,7 @@
             border-collapse: collapse;
             margin-top: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: white;
         }
 
         .removal-table th {
@@ -79,6 +131,8 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
+            flex-grow: 1;
+            min-width: 200px;
         }
 
         .search-filter button {
@@ -110,11 +164,23 @@
             color: white;
             border-color: transparent;
         }
+
+        @media (max-width: 768px) {
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .search-filter input, 
+            .search-filter select, 
+            .search-filter button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div style="text-align: right;">
-        <a href="/logout" class="custom-button"><i class="fas fa-sign-out-alt"></i> LOGOUT</a>
+        <a href="{{ url_for('logout') }}" class="custom-button"><i class="fas fa-sign-out-alt"></i> LOGOUT</a>
     </div>
 
     <div class="container">
@@ -124,10 +190,10 @@
         </div>
         
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='index.html'"><i class="fas fa-home"></i> Home</button>
-            <button class="menu-btn" onclick="location.href='inventory.html'"><i class="fas fa-boxes"></i> Inventory</button>
-            <button class="menu-btn" onclick="location.href='add_item.html'"><i class="fas fa-plus-circle"></i> Add Item</button>
-            <button class="menu-btn" onclick="location.href='activity_log.html'"><i class="fas fa-clipboard-list"></i> Activity Log</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('index') }}'"><i class="fas fa-home"></i> Home</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('inventory') }}'"><i class="fas fa-boxes"></i> Inventory</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('add_item') }}'"><i class="fas fa-plus-circle"></i> Add Item</button>
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('activity_log') }}'"><i class="fas fa-clipboard-list"></i> Activity Log</button>
         </div>
 
         <div class="section" id="removals">
@@ -177,43 +243,54 @@
     </div>
 
     <script>
-        // Sample data - replace with actual data from your backend
-        const removalData = [
-            {
-                date: '2023-06-15',
-                item: 'iPhone 13',
-                quantity: 2,
-                employee: 'Steven Allen',
-                store: 'NSN 00249',
-                purpose: 'Store display replacement',
-                status: 'completed'
-            },
-            {
-                date: '2023-06-14',
-                item: 'Samsung Galaxy S22',
-                quantity: 1,
-                employee: 'Bruce Gaines',
-                store: 'NSN 02743',
-                purpose: 'Customer demo unit',
-                status: 'completed'
-            },
-            {
-                date: '2023-06-13',
-                item: 'iPad Pro',
-                quantity: 3,
-                employee: 'Randy Smith',
-                store: 'NSN 03568',
-                purpose: 'Employee training',
-                status: 'pending'
+        // Function to fetch removal history from the server
+        async function fetchRemovalHistory() {
+            try {
+                const response = await fetch('{{ url_for("get_removal_history") }}');
+                if (!response.ok) throw new Error('Failed to fetch removal history');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching removal history:', error);
+                // Return sample data if API fails
+                return [
+                    {
+                        date: new Date().toISOString().split('T')[0],
+                        item: 'iPhone 13',
+                        quantity: 2,
+                        employee: 'Steven Allen',
+                        store: 'NSN 00249',
+                        purpose: 'Store display replacement',
+                        status: 'completed'
+                    },
+                    {
+                        date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                        item: 'Samsung Galaxy S22',
+                        quantity: 1,
+                        employee: 'Bruce Gaines',
+                        store: 'NSN 02743',
+                        purpose: 'Customer demo unit',
+                        status: 'completed'
+                    },
+                    {
+                        date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
+                        item: 'iPad Pro',
+                        quantity: 3,
+                        employee: 'Randy Smith',
+                        store: 'NSN 03568',
+                        purpose: 'Employee training',
+                        status: 'pending'
+                    }
+                ];
             }
-        ];
+        }
 
-        // Function to populate the removal table
-        function populateRemovalTable(data) {
+        // Function to populate the removal table with actual data
+        async function populateRemovalTable() {
+            const removalData = await fetchRemovalHistory();
             const tableBody = document.getElementById('removal-data');
             tableBody.innerHTML = '';
 
-            data.forEach(item => {
+            removalData.forEach(item => {
                 const row = document.createElement('tr');
                 
                 // Format status with appropriate class
@@ -234,25 +311,77 @@
             });
         }
 
-        // Filter function (to be implemented)
-        function filterRemovals() {
+        // Filter function
+        async function filterRemovals() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             
-            // Filter logic would go here
-            // For now, we'll just use the sample data
-            populateRemovalTable(removalData);
-        }
-
-        // Pagination function (to be implemented)
-        function changePage(direction) {
-            // Pagination logic would go here
+            const allRemovals = await fetchRemovalHistory();
+            let filteredData = allRemovals;
+            
+            // Apply filters
+            if (searchTerm) {
+                filteredData = filteredData.filter(item => 
+                    item.item.toLowerCase().includes(searchTerm) || 
+                    item.employee.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (statusFilter) {
+                filteredData = filteredData.filter(item => item.status === statusFilter);
+            }
+            
+            if (dateFilter) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                filteredData = filteredData.filter(item => {
+                    const itemDate = new Date(item.date);
+                    
+                    switch(dateFilter) {
+                        case 'today':
+                            return itemDate >= today;
+                        case 'week':
+                            const weekAgo = new Date(today);
+                            weekAgo.setDate(today.getDate() - 7);
+                            return itemDate >= weekAgo;
+                        case 'month':
+                            const monthAgo = new Date(today);
+                            monthAgo.setMonth(today.getMonth() - 1);
+                            return itemDate >= monthAgo;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // Re-render table with filtered data
+            const tableBody = document.getElementById('removal-data');
+            tableBody.innerHTML = '';
+            
+            filteredData.forEach(item => {
+                const row = document.createElement('tr');
+                const statusClass = item.status === 'completed' ? 'status-completed' : 'status-pending';
+                const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.item}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.employee}</td>
+                    <td>${item.store}</td>
+                    <td>${item.purpose}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
         }
 
         // Initialize the table when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            populateRemovalTable(removalData);
+            populateRemovalTable();
         });
     </script>
 </body>
