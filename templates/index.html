@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Device Inventory System</title>
-    <link rel="stylesheet" href="static/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
         .custom-button {
             display: inline-block;
             padding: 12px 24px;
@@ -62,7 +70,7 @@
         .credits {
             margin-top: 30px;
             text-align: center;
-            color: #777;
+            color: rgba(255,255,255,0.7);
             font-size: 14px;
         }
         
@@ -71,9 +79,9 @@
             justify-content: space-around;
             margin: 25px 0;
             padding: 15px;
-            background: #f8f9fa;
+            background: rgba(255,255,255,0.1);
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .stat-item {
@@ -83,18 +91,18 @@
         .stat-value {
             font-size: 24px;
             font-weight: bold;
-            color: #2c3e50;
+            color: white;
         }
         
         .stat-label {
             font-size: 14px;
-            color: #7f8c8d;
+            color: rgba(255,255,255,0.7);
         }
     </style>
 </head>
 <body>
     <div style="text-align: right;">
-        <a href="/logout" class="custom-button">🚪 LOGOUT</a>
+        <a href="{{ url_for('logout') }}" class="custom-button">🚪 LOGOUT</a>
     </div>
 
     <div class="container">
@@ -120,19 +128,19 @@
         </div>
         
         <div class="menu">
-            <button class="menu-btn" onclick="location.href='inventory.html'">
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('inventory') }}'">
                 📦 View Inventory<br>
                 <small>Browse all items</small>
             </button>
-            <button class="menu-btn" onclick="location.href='add_item.html'">
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('add_item') }}'">
                 ➕ Add Item<br>
                 <small>Add new inventory</small>
             </button>
-            <button class="menu-btn" onclick="location.href='removals.html'">
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('removals') }}'">
                 📋 Removal History<br>
                 <small>Track item removals</small>
             </button>
-            <button class="menu-btn" onclick="location.href='activity_log.html'">
+            <button class="menu-btn" onclick="window.location.href='{{ url_for('activity_log') }}'">
                 📊 Activity Log<br>
                 <small>View all actions</small>
             </button>
@@ -145,27 +153,21 @@
     </div>
 
     <script>
-        // This would be populated with actual data from your backend
-        // For now, we'll use placeholder values
         document.addEventListener('DOMContentLoaded', function() {
             // These would normally come from API calls
-            // fetch('/api/stats').then(...)
-            
-            // Placeholder values
-            document.getElementById('total-items').textContent = '0';
-            document.getElementById('low-stock').textContent = '0';
-            document.getElementById('recent-activity').textContent = '0';
-            
-            // You would implement actual data fetching like:
-            /*
-            fetch('/api/inventory/stats')
+            fetch('{{ url_for("get_stats") }}')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('total-items').textContent = data.totalItems;
-                    document.getElementById('low-stock').textContent = data.lowStockItems;
-                    document.getElementById('recent-activity').textContent = data.recentActivities;
+                    document.getElementById('total-items').textContent = data.totalItems || '0';
+                    document.getElementById('low-stock').textContent = data.lowStockItems || '0';
+                    document.getElementById('recent-activity').textContent = data.recentActivities || '0';
+                })
+                .catch(error => {
+                    console.error('Error fetching stats:', error);
+                    document.getElementById('total-items').textContent = '0';
+                    document.getElementById('low-stock').textContent = '0';
+                    document.getElementById('recent-activity').textContent = '0';
                 });
-            */
         });
     </script>
 </body>
