@@ -75,6 +75,24 @@ def log_activity(username, action):
     activities.append(activity)
     write_json(ACTIVITY_FILE, activities)
 
+# removeal data
+@app.route('/get_removal_history')
+def get_removal_history():
+    """Endpoint to get removal history data"""
+    try:
+        # Replace this with your actual data loading logic
+        # Example: Load from database or JSON file
+        removals = []
+        
+        # Sample data - replace with your actual data source
+        if os.path.exists('data/removals.json'):
+            with open('data/removals.json') as f:
+                removals = json.load(f)
+        
+        return jsonify(removals)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 # Authentication decorator
 def login_required(f):
     @wraps(f)
