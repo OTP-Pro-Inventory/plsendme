@@ -1,113 +1,159 @@
-from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for, render_template
+from flask import Flask, request, jsonify, session, redirect, url_for, render_template
 from flask_cors import CORS
 from functools import wraps
 import json
 import os
+from datetime import datetime
 
+# Initialize Flask app
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
-app.secret_key = "your-secret-key"  # Change this to a secure key in production
 
-# Sample user database
+# Configuration
+app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-here'
+app.config['DATA_FOLDER'] = os.path.join(os.path.dirname(__file__), 'data')
+os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
+
+# User authentication - consider using proper database in production
 USERS = {
     "sallen": "Bigmac100",
     "bgaines": "Cheese100"
 }
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INVENTORY_FILE = os.path.join(BASE_DIR, "inventory.json")
-REMOVAL_FILE = os.path.join(BASE_DIR, "removal_history.json")
-ACTIVITY_FILE = os.path.join(BASE_DIR, "activity_log.json")
+# File paths
+INVENTORY_FILE = os.path.join(app.config['DATA_FOLDER'], 'inventory.json')
+REMOVALS_FILE = os.path.join(app.config['DATA_FOLDER'], 'removals.json')
+ACTIVITY_FILE = os.path.join(app.config['DATA_FOLDER'], 'activity.json')
 
-def read_json(path):
-    if not os.path.exists(path):
+def initialize_data_files():
+    """Create data files if they don't exist"""
+    for file_path in [INVENTORY_FILE, REMOVALS_FILE, ACTIVITY_FILE]:
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as f:
+                json.dump([], f)
+
+initialize_data_files()
+
+def read_json(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
         return []
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
 
-def write_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
+def write_json(file_path, data):
+    with open(file_path, 'w') as f:
         json.dump(data, f, indent=2)
 
-# Login required decorator
+def log_activity(username, action):
+    """Record user activities with timestamp"""
+    activity = {
+        "user": username,
+        "action": action,
+        "timestamp": datetime.now().isoformat()
+    }
+    activities = read_json(ACTIVITY_FILE)
+    activities.append(activity)
+    write_json(ACTIVITY_FILE, activities)
+
+# Authentication decorator
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "username" not in session:
-            return redirect(url_for("login"))
+        if 'username' not in session:
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
-# HTML Page Routes
-@app.route("/")
-@login_required
-def serve_index():
-    return render_template("index.html")
+# ======================
+# ROUTES
+# ======================
 
-@app.route("/login", methods=["GET", "POST"])
+# Main pages
+@app.route('/')
+@login_required
+def index():
+    log_activity(session['username'], 'Accessed dashboard')
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
         if username in USERS and USERS[username] == password:
-            session["username"] = username
-            return redirect(url_for("serve_index"))
-        return render_template("login.html", error="Invalid username or password")
-    return render_template("login.html")
+            session['username'] = username
+            log_activity(username, 'Logged in')
+            return redirect(url_for('index'))
+        
+        return render_template('login.html', error='Invalid credentials')
+    
+    return render_template('login.html')
 
-@app.route("/logout")
+@app.route('/logout')
 def logout():
-    session.pop("username", None)
-    return redirect(url_for("login"))
+    if 'username' in session:
+        log_activity(session['username'], 'Logged out')
+        session.pop('username', None)
+    return redirect(url_for('login'))
 
-@app.route("/inventory")
+# Inventory routes
+@app.route('/inventory')
 @login_required
-def inventory_page():
-    return render_template("inventory.html")
+def inventory():
+    log_activity(session['username'], 'Viewed inventory')
+    return render_template('inventory.html')
 
-@app.route("/activity")
+@app.route('/add-item')
 @login_required
-def activity_page():
-    return render_template("activity.html")
+def add_item():
+    log_activity(session['username'], 'Accessed add item')
+    return render_template('add_item.html')
 
-@app.route("/removals")
+@app.route('/removals')
 @login_required
-def removals_page():
-    return render_template("removals.html")
+def removals():
+    log_activity(session['username'], 'Viewed removals')
+    return render_template('removals.html')
 
-# API Endpoints (keep your existing ones)
-@app.route("/api/inventory", methods=["GET", "PUT"])
+@app.route('/activity-log')
 @login_required
-def inventory_api():
-    if request.method == "GET":
-        data = read_json(INVENTORY_FILE)
-        return jsonify(data)
+def activity_log():
+    log_activity(session['username'], 'Viewed activity log')
+    return render_template('activity_log.html')
+
+# API Endpoints
+@app.route('/api/inventory', methods=['GET', 'POST'])
+@login_required
+def api_inventory():
+    if request.method == 'GET':
+        return jsonify(read_json(INVENTORY_FILE))
     else:
-        new_data = request.get_json(force=True)
-        write_json(INVENTORY_FILE, new_data)
-        return jsonify({"status": "ok", "length": len(new_data)})
+        data = request.get_json()
+        write_json(INVENTORY_FILE, data)
+        log_activity(session['username'], 'Updated inventory')
+        return jsonify({'status': 'success'})
 
-@app.route("/api/removals", methods=["GET", "PUT"])
+@app.route('/api/removals', methods=['GET', 'POST'])
 @login_required
-def removals_api():
-    if request.method == "GET":
-        data = read_json(REMOVAL_FILE)
-        return jsonify(data)
+def api_removals():
+    if request.method == 'GET':
+        return jsonify(read_json(REMOVALS_FILE))
     else:
-        new_data = request.get_json(force=True)
-        write_json(REMOVAL_FILE, new_data)
-        return jsonify({"status": "ok", "length": len(new_data)})
+        data = request.get_json()
+        write_json(REMOVALS_FILE, data)
+        log_activity(session['username'], 'Updated removals')
+        return jsonify({'status': 'success'})
 
-@app.route("/api/activity", methods=["GET", "PUT"])
+@app.route('/api/activity', methods=['GET'])
 @login_required
-def activity_api():
-    if request.method == "GET":
-        data = read_json(ACTIVITY_FILE)
-        return jsonify(data)
-    else:
-        new_data = request.get_json(force=True)
-        write_json(ACTIVITY_FILE, new_data)
-        return jsonify({"status": "ok", "length": len(new_data)})
+def api_activity():
+    return jsonify(read_json(ACTIVITY_FILE))
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+# ======================
+# RUN APPLICATION
+# ======================
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
